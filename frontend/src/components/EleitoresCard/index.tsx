@@ -1,6 +1,9 @@
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Eleitor } from "../../models/eleitor";
+import { BASE_URL } from "../../utils/request";
 import NotificationButton from '../NotificationButton'
 import './styles.css'
 
@@ -11,6 +14,19 @@ function EleitoresCard() {
 
     const [minDate, setMinDate] = useState(min);
     const [maxDate, setMaxDate] = useState(max);
+
+    const [eleitores, setEleitores] = useState<Eleitor[]>([]);
+
+    useEffect(() => {
+
+        const dmin = minDate.toISOString().slice(0, 10);
+        const dmax = maxDate.toISOString().slice(0, 10);
+
+        axios.get(`${BASE_URL}/eleitores?minDate=${dmin}&maxDate=${dmax}`)
+                .then(response => {
+                    setEleitores(response.data.content);
+                })
+    }, [minDate,maxDate]);
 
     return (
         <>
@@ -40,54 +56,31 @@ function EleitoresCard() {
                         <thead>
                             <tr>
                                 <th className="show992">ID</th>
-                                <th className="show576">Data</th>
                                 <th>Eleitor</th>
-                                <th className="show992">Email</th>
+                                <th className="show576">Email</th>
                                 <th className="show992">Telefone</th>
-                                <th>Total</th>
+                                <th className="show576">Data-Entrada</th>
                                 <th>Notificar</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td className="show992">#341</td>
-                                <td className="show576">08/07/2022</td>
-                                <td>Anakin</td>
-                                <td className="show992">15</td>
-                                <td className="show992">11</td>
-                                <td>R$ 55300.00</td>
+                            {eleitores.map(eleitor => {
+                                return(
+                                    <tr key={eleitor.id}>
+                                <td className="show992">{eleitor.id}</td>
+                                <td>{eleitor.nome}</td>
+                                <td className="show576">{eleitor.email}</td>
+                                <td className="show992">{eleitor.telefone}</td>
+                                <td className="show576">{new Date(eleitor.dataentrada).toLocaleDateString
+                                ()}</td>
                                 <td>
                                     <div className="dsmeta-red-btn-container">
                                         <NotificationButton />
                                     </div>
                                 </td>
                             </tr>
-                            <tr>
-                                <td className="show992">#341</td>
-                                <td className="show576">08/07/2022</td>
-                                <td>Anakin</td>
-                                <td className="show992">15</td>
-                                <td className="show992">11</td>
-                                <td>R$ 55300.00</td>
-                                <td>
-                                    <div className="dsmeta-red-btn-container">
-                                        <NotificationButton />
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="show992">#341</td>
-                                <td className="show576">08/07/2022</td>
-                                <td>Anakin</td>
-                                <td className="show992">15</td>
-                                <td className="show992">11</td>
-                                <td>R$ 55300.00</td>
-                                <td>
-                                    <div className="dsmeta-red-btn-container">
-                                        <NotificationButton />
-                                    </div>
-                                </td>
-                            </tr>
+                                )
+                            })}
                         </tbody>
 
                     </table>
