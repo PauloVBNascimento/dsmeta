@@ -75,7 +75,7 @@ function EleitoresCard() {
                                 ()}</td>
                                 <td>
                                     <div className="dsmeta-red-btn-container">
-                                        <NotificationButton />
+                                        <NotificationButton eleitorId={eleitor.id} />
                                     </div>
                                 </td>
                             </tr>
