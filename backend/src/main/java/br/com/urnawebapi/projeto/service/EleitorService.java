@@ -3,7 +3,8 @@ package br.com.urnawebapi.projeto.service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.List;
+import java.util.Date;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -14,10 +15,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.urnawebapi.projeto.dto.EleitorDto;
+import br.com.urnawebapi.projeto.exception.ExpiredTokenException;
+import br.com.urnawebapi.projeto.exception.InvalidTokenException;
 import br.com.urnawebapi.projeto.model.Eleitor;
 import br.com.urnawebapi.projeto.repository.EleitorInterface;
 import br.com.urnawebapi.projeto.security.TokenUtil;
-import br.com.urnawebapi.projeto.security.Token;
+import io.jsonwebtoken.Claims;
+
 
 @Service
 public class EleitorService {
@@ -47,11 +51,22 @@ public class EleitorService {
         return eleitorNovo;
     }
 
+    public Eleitor procurarEleitor(Integer id) {
+        Optional<Eleitor> eleitorEncontrado = repository.findById(id);
+        if (eleitorEncontrado.isPresent()) {
+            return eleitorEncontrado.get();
+        }
+        throw new RuntimeException("Não encontrei");
+    }
+
     public Eleitor editaEleitor(Eleitor eleitor) {
+        if (validarSenha(eleitor)) {
         String esconder = this.passwordEncoder.encode(eleitor.getSenha());
         eleitor.setSenha(esconder);
         Eleitor eleitorNovo = repository.save(eleitor);
         return eleitorNovo;
+        }
+        throw new RuntimeException("Senha incorreta");
     }
 
     public Boolean excluirEleitor(Integer id) {
@@ -65,21 +80,42 @@ public class EleitorService {
         return valido;
     }
 
-    public Token gerarToken(@Valid EleitorDto eleitor) {
+    public Eleitor gerarToken(@Valid EleitorDto eleitor, String token) {
         Eleitor user = repository.findByEmail(eleitor.getEmail());
-        System.out.println(eleitor.getSenha());
-        System.out.println(user.getSenha());
         if(user != null) {
             Boolean valid = passwordEncoder.matches(eleitor.getSenha(), user.getSenha());
-            if(valid) {
+            if(valid && !token.isEmpty() && validarToken(token)) {
                 System.out.println(valid);
-                return new Token(TokenUtil.criarToken(user));
+                eleitor.setToken(TokenUtil.criarToken(user));
+                //String tokenGerado = TokenUtil.criarToken(user);
+                //user.setToken(tokenGerado);
+                return user;
             }   
             else {
-
+                
             }     
         }
         return null;
     
-    } 
+    }
+
+    private boolean validarToken(String token) {
+        try {
+            String tokenValido = token.replace("Bearer ", "");
+            Claims claims = TokenUtil.decodificarToken(tokenValido);
+
+            System.out.println(claims.getIssuer());
+            System.out.println(claims.getIssuedAt());
+
+            if(claims.getExpiration().before(new Date(System.currentTimeMillis()))) throw new ExpiredTokenException();
+            System.out.println(claims.getExpiration());
+            return true;
+        } catch (ExpiredTokenException et) {
+            et.printStackTrace();
+            throw et;
+        }catch (Exception e) {
+            e.printStackTrace();
+            throw new InvalidTokenException();
+        }
+    }   
 }

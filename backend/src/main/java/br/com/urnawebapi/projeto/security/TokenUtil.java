@@ -31,6 +31,7 @@ public class TokenUtil {
         String token = Jwts.builder()
                                     .setSubject(eleitor.getNome())
                                     .setIssuer(EMISSOR)
+                                    .setIssuedAt(new Date(System.currentTimeMillis()))
                                     .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                                     .signWith(secretKey, SignatureAlgorithm.HS256)
                                     .compact();
@@ -65,5 +66,12 @@ public class TokenUtil {
         }
 
         return null;
+    }
+    public static Claims decodificarToken(String token) {
+        return Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
     }
 }

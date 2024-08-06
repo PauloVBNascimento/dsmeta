@@ -5,23 +5,22 @@ import { BASE_URL } from '../../utils/request';
 import './styles.css'
 
 type Props = {
-    Id: number;
+    eleitorId: number;
 }
 
-function cuidarClick (id :number) {
+/*function cuidarClick (id :number) {
     axios(`${BASE_URL}/eleitores/${id}/notificar`)
           .then(response => {
             toast.info("SMS enviado com sucesso")
           })
-}
+}*/
 
-function NotificationButton( {Id} : Props ) {
+function EditButton( {eleitorId} : Props ) {
     return (
-        <div className="dsmeta-red-btn" onClick={() => cuidarClick(Id)}>
+        <div className="dsmeta-red-btn" /*onClick={() => cuidarClick(eleitorId)}*/>
         <img src={iconesms} alt="Notificar" />
       </div>
     )
   }
-
   
-  export default NotificationButton
+  export default EditButton

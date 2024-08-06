@@ -15,5 +15,7 @@ public interface EleitorInterface extends JpaRepository<Eleitor, Integer>{
     Eleitor findByEmail(String email);
 
     @Query("SELECT obj FROM Eleitor obj WHERE obj.dataentrada BETWEEN :min AND :max ORDER BY obj.id ASC")
-    Page<Eleitor> findEleitores(@Param("min") LocalDate min,@Param("max") LocalDate max, Pageable pageable);    
+    Page<Eleitor> findEleitores(@Param("min") LocalDate min,@Param("max") LocalDate max, Pageable pageable);  
+    
+    
 }

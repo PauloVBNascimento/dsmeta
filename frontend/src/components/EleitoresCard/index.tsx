@@ -5,6 +5,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Eleitor } from "../../models/eleitor";
 import { BASE_URL } from "../../utils/request";
 import NotificationButton from '../NotificationButton'
+import CreateButton from "../CreateButton";
+import { Link } from "react-router-dom"
 import './styles.css'
 
 function EleitoresCard() {
@@ -23,10 +25,17 @@ function EleitoresCard() {
         const dmax = maxDate.toISOString().slice(0, 10);
 
         axios.get(`${BASE_URL}/eleitores?minDate=${dmin}&maxDate=${dmax}`)
-                .then(response => {
-                    setEleitores(response.data.content);
-                })
-    }, [minDate,maxDate]);
+            .then(response => {
+                setEleitores(response.data.content);
+            })
+    }, [minDate, maxDate]);
+
+    function deletarEleitor(id: number) {
+        axios.delete(`${BASE_URL}/eleitores/${id}`)
+
+        setEleitores(eleitores.filter(eleitor => eleitor.id !== id))
+        
+    }   
 
     return (
         <>
@@ -36,7 +45,7 @@ function EleitoresCard() {
                     <div className="dsmeta-form-control-container">
                         <DatePicker
                             selected={minDate}
-                            onChange={(date: Date) =>  setMinDate(date)}
+                            onChange={(date: Date) => setMinDate(date)}
                             className="dsmeta-form-control"
                             dateFormat="dd/MM/yyyy"
                         />
@@ -65,20 +74,30 @@ function EleitoresCard() {
                         </thead>
                         <tbody>
                             {eleitores.map(eleitor => {
-                                return(
+                                return (
                                     <tr key={eleitor.id}>
-                                <td className="show992">{eleitor.id}</td>
-                                <td>{eleitor.nome}</td>
-                                <td className="show576">{eleitor.email}</td>
-                                <td className="show992">{eleitor.telefone}</td>
-                                <td className="show576">{new Date(eleitor.dataentrada).toLocaleDateString
-                                ()}</td>
-                                <td>
-                                    <div className="dsmeta-red-btn-container">
-                                        <NotificationButton eleitorId={eleitor.id} />
-                                    </div>
-                                </td>
-                            </tr>
+                                        <td className="show992">{eleitor.id}</td>
+                                        <td>{eleitor.nome}</td>
+                                        <td className="show576">{eleitor.email}</td>
+                                        <td className="show992">{eleitor.telefone}</td>
+                                        <td className="show576">{new Date(eleitor.dataentrada).toLocaleDateString
+                                            ('de', {timeZone: "UTC"})}</td>
+                                        <td>
+                                            <div className="dsmeta-red-btn-container">
+                                                <NotificationButton Id={eleitor.id} />
+                                            </div>
+                                        </td>
+                                        <div className="dsmeta-red-btn-container">
+                                            <Link to={{ pathname: `${eleitor.id}/editar` }}>
+                                                <button>Edit</button>
+                                            </Link>
+                                        </div>
+                                        <div className="dsmeta-red-btn-container">
+
+                                            <button onClick={() => deletarEleitor(eleitor.id)}>Delete</button>
+
+                                        </div>
+                                    </tr>
                                 )
                             })}
                         </tbody>
